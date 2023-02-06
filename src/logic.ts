@@ -1,8 +1,8 @@
-import { request, Request, Response } from "express";
+import { Request, Response } from "express";
 import { QueryConfig } from "pg";
-import format, { config } from "pg-format";
+import format from "pg-format";
 import { client } from "./database";
-import { iMovieInfo, iMovieInfoPage, iMovieRequest, tCreateMovieRequiredKeys, tMovieResult, tOrderAcceptableKeys, tSortAcceptableKeys } from "./interfaces";
+import { iMovieInfo, iMovieInfoPage, iMovieRequest, tMovieResult, tOrderAcceptableKeys, tSortAcceptableKeys } from "./interfaces";
 
 const createMovie = async (request: Request, response: Response): Promise<Response> => {
 
@@ -28,9 +28,9 @@ const createMovie = async (request: Request, response: Response): Promise<Respon
 
 const listMovies = async (request: Request, response: Response): Promise<Response> => {
 
-    const perPage: any = request.query.perPage === undefined || Number(request.query.perPage) <= 0 || Number(request.query.perPage) > 5 ? 5 : request.query.perPage;
-    let page: any = request.query.page === undefined || Number(request.query.page) <= 0 ? 1 : request.query.page;
-
+    const perPage: any = request.query.perPage === undefined || Number(request.query.perPage) <= 0 || Number(request.query.perPage) > 5 ? 5 : !Number(request.query.perPage) ? 5 : request.query.perPage;
+    let page: any = request.query.page === undefined || Number(request.query.page) <= 0 || !Number(request.query.page) ? 1 : request.query.page;
+   
     const sort: any = request.query.sort;
     const order: any = request.query.sort === undefined ? undefined : request.query.order === undefined ? "ASC" : request.query.order;
 
@@ -55,7 +55,7 @@ const listMovies = async (request: Request, response: Response): Promise<Respons
 
     if (sortIsRequiredKey && orderIsRequiredKey) {
 
-        if (order === "ASC") {
+        if (order.toUpperCase() === "ASC") {
             
             queryString = format(
                 `
@@ -67,7 +67,7 @@ const listMovies = async (request: Request, response: Response): Promise<Respons
                         %s ASC
                     LIMIT $1 OFFSET $2;
                 `,
-                sort
+                sort.toLowerCase()
             );
         }
 
@@ -82,7 +82,7 @@ const listMovies = async (request: Request, response: Response): Promise<Respons
                     %s DESC
                 LIMIT $1 OFFSET $2;
             `,
-                sort
+                sort.toLowerCase()
             );
         };
 
